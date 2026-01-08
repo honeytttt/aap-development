@@ -1,0 +1,23 @@
+#!/bin/bash
+
+echo "🧪 TESTING COMMENTS LIKE FUNCTIONALITY"
+echo "======================================"
+
+echo ""
+echo "1. Starting Flutter app..."
+echo "2. Navigate to any post with comments"
+echo "3. Click on like button on a comment"
+echo ""
+echo "✅ Expected Behavior:"
+echo "   - Heart icon should change from outline to filled"
+echo "   - Like count should increase by 1"
+echo "   - Click again: count should decrease by 1"
+echo "   - Icon should change back to outline"
+echo ""
+echo "🔧 If not working, check:"
+echo "   1. Comment model has likedBy list"
+echo "   2. CommentProvider toggleCommentLike method"
+echo "   3. CommentItem widget uses Provider.of"
+echo "   4. main.dart includes CommentProvider"
+echo ""
+echo "🚀 To run test: flutter run lib/main.dart"

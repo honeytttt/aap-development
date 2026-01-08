@@ -1,31 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:workout_app/core/models/media.dart';
-import 'package:workout_app/core/models/media_gallery.dart' 
-    show MediaGallery; // IMPORT FROM MODELS
+import 'package:workout_app/core/models/media.dart' as media_model;
 
-class MediaGalleryWidget extends StatefulWidget {
-  final List<Media> media;
+class MediaGallery extends StatefulWidget {
+  final List<media_model.MediaItem> mediaItems;
   final int initialIndex;
-  final bool showControls;
-  final bool autoPlayVideos;
-  final Function(int)? onPageChanged;
 
-  const MediaGalleryWidget({
+  const MediaGallery({
     super.key,
-    required this.media,
+    required this.mediaItems,
     this.initialIndex = 0,
-    this.showControls = true,
-    this.autoPlayVideos = false,
-    this.onPageChanged,
   });
 
   @override
-  State<MediaGalleryWidget> createState() => _MediaGalleryWidgetState();
+  State<MediaGallery> createState() => _MediaGalleryState();
 }
 
-class _MediaGalleryWidgetState extends State<MediaGalleryWidget> {
+class _MediaGalleryState extends State<MediaGallery> {
   late PageController _pageController;
-  late int _currentIndex;
+  int _currentIndex = 0;
 
   @override
   void initState() {
@@ -42,207 +34,6 @@ class _MediaGalleryWidgetState extends State<MediaGalleryWidget> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.media.isEmpty) {
-      return Container(
-        height: 200,
-        decoration: BoxDecoration(
-          color: const Color.fromRGBO(200, 200, 200, 1),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: const Center(
-          child: Icon(
-            Icons.photo_library,
-            size: 50,
-            color: Colors.grey,
-          ),
-        ),
-      );
-    }
-
-    return Stack(
-      children: [
-        // Media content
-        SizedBox(
-          height: 300,
-          child: PageView.builder(
-            controller: _pageController,
-            itemCount: widget.media.length,
-            onPageChanged: (index) {
-              setState(() {
-                _currentIndex = index;
-              });
-              widget.onPageChanged?.call(index);
-            },
-            itemBuilder: (context, index) {
-              final media = widget.media[index];
-              return _buildMediaItem(media);
-            },
-          ),
-        ),
-
-        // Indicators
-        if (widget.showControls && widget.media.length > 1)
-          Positioned(
-            bottom: 16,
-            left: 0,
-            right: 0,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(
-                widget.media.length,
-                (index) => Container(
-                  width: 8,
-                  height: 8,
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: _currentIndex == index
-                        ? const Color(0xFF4CAF50)
-                        : const Color.fromRGBO(255, 255, 255, 0.5),
-                  ),
-                ),
-              ),
-            ),
-          ),
-
-        // Media count badge
-        if (widget.media.length > 1)
-          Positioned(
-            top: 12,
-            right: 12,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: const Color.fromRGBO(0, 0, 0, 0.5),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                '${_currentIndex + 1}/${widget.media.length}',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-
-        // Media type indicators
-        Positioned(
-          top: 12,
-          left: 12,
-          child: Wrap(
-            spacing: 4,
-            children: [
-              if (widget.media[_currentIndex].isVideo)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: const Color.fromRGBO(0, 0, 0, 0.5),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.play_arrow, size: 12, color: Colors.white),
-                      SizedBox(width: 2),
-                      Text(
-                        'VIDEO',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMediaItem(Media media) {
-    return GestureDetector(
-      onTap: () {
-        // Open full-screen viewer
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => MediaViewerScreen(
-              mediaGallery: MediaGallery(
-                media: widget.media,
-                currentIndex: _currentIndex,
-              ),
-            ),
-          ),
-        );
-      },
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 4),
-        decoration: BoxDecoration(
-          color: const Color.fromRGBO(200, 200, 200, 1),
-          borderRadius: BorderRadius.circular(8),
-          image: media.isImage
-              ? DecorationImage(
-                  image: NetworkImage(media.url),
-                  fit: BoxFit.cover,
-                )
-              : null,
-        ),
-        child: media.isVideo
-            ? Stack(
-                children: [
-                  // Video thumbnail
-                  if (media.thumbnailUrl != null)
-                    Image.network(
-                      media.thumbnailUrl!,
-                      width: double.infinity,
-                      height: double.infinity,
-                      fit: BoxFit.cover,
-                    ),
-                  // Video overlay
-                  Container(
-                    color: const Color.fromRGBO(0, 0, 0, 0.3),
-                    child: const Center(
-                      child: Icon(
-                        Icons.play_circle_filled,
-                        size: 60,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ],
-              )
-            : null,
-      ),
-    );
-  }
-}
-
-// Full-screen media viewer
-class MediaViewerScreen extends StatefulWidget {
-  final MediaGallery mediaGallery;
-
-  const MediaViewerScreen({super.key, required this.mediaGallery});
-
-  @override
-  State<MediaViewerScreen> createState() => _MediaViewerScreenState();
-}
-
-class _MediaViewerScreenState extends State<MediaViewerScreen> {
-  late MediaGallery _gallery;
-
-  @override
-  void initState() {
-    super.initState();
-    _gallery = widget.mediaGallery;
-  }
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -250,82 +41,93 @@ class _MediaViewerScreenState extends State<MediaViewerScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.close, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Navigator.of(context).pop(),
         ),
-      ),
-      body: GestureDetector(
-        onHorizontalDragEnd: (details) {
-          if (details.primaryVelocity! < 0 && _gallery.hasNext) {
-            setState(() {
-              _gallery = _gallery.next();
-            });
-          } else if (details.primaryVelocity! > 0 && _gallery.hasPrevious) {
-            setState(() {
-              _gallery = _gallery.previous();
-            });
-          }
-        },
-        child: Center(
-          child: _gallery.media[_gallery.currentIndex].isImage
-              ? Image.network(
-                  _gallery.currentMedia.url,
-                  fit: BoxFit.contain,
-                )
-              : Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.play_circle_filled,
-                      size: 80,
-                      color: Colors.white,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Video: ${_gallery.currentMedia.caption ?? "No caption"}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ],
-                ),
+        title: Text(
+          '${_currentIndex + 1}/${widget.mediaItems.length}',
+          style: const TextStyle(color: Colors.white),
         ),
+        centerTitle: true,
       ),
-      bottomNavigationBar: _gallery.media.length > 1
-          ? Container(
-              padding: const EdgeInsets.all(16),
-              color: const Color.fromRGBO(0, 0, 0, 0.5),
+      body: Column(
+        children: [
+          Expanded(
+            child: PageView.builder(
+              controller: _pageController,
+              itemCount: widget.mediaItems.length,
+              onPageChanged: (index) {
+                setState(() {
+                  _currentIndex = index;
+                });
+              },
+              itemBuilder: (context, index) {
+                final mediaItem = widget.mediaItems[index];
+                return _buildMediaItem(mediaItem);
+              },
+            ),
+          ),
+          if (widget.mediaItems.length > 1)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.chevron_left, color: Colors.white),
-                    onPressed: _gallery.hasPrevious
-                        ? () {
-                            setState(() {
-                              _gallery = _gallery.previous();
-                            });
-                          }
-                        : null,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(
+                  widget.mediaItems.length,
+                  (index) => Container(
+                    width: 8,
+                    height: 8,
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: _currentIndex == index
+                          ? Colors.white
+                          : Colors.white.withOpacity(0.5),
+                    ),
                   ),
-                  Text(
-                    '${_gallery.currentIndex + 1}/${_gallery.media.length}',
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.chevron_right, color: Colors.white),
-                    onPressed: _gallery.hasNext
-                        ? () {
-                            setState(() {
-                              _gallery = _gallery.next();
-                            });
-                          }
-                        : null,
-                  ),
-                ],
+                ),
               ),
-            )
-          : null,
+            ),
+        ],
+      ),
     );
+  }
+
+  Widget _buildMediaItem(media_model.MediaItem media) {
+    if (media.type == media_model.MediaType.video) {
+      return Stack(
+        children: [
+          Center(
+            child: Image.network(
+              media.thumbnailUrl ?? media.url,
+              fit: BoxFit.contain,
+            ),
+          ),
+          Center(
+            child: IconButton(
+              icon: const Icon(
+                Icons.play_circle_filled,
+                size: 64,
+                color: Colors.white,
+              ),
+              onPressed: () {
+                // Play video
+              },
+            ),
+          ),
+        ],
+      );
+    } else {
+      return InteractiveViewer(
+        panEnabled: true,
+        minScale: 1,
+        maxScale: 4,
+        child: Center(
+          child: Image.network(
+            media.url,
+            fit: BoxFit.contain,
+          ),
+        ),
+      );
+    }
   }
 }

@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:workout_app/core/constants/app_constants.dart';
-import 'package:workout_app/features/auth/providers/auth_provider.dart';
-import 'package:workout_app/features/feed/providers/feed_provider.dart';
-import 'package:workout_app/features/profile/providers/profile_provider.dart';
-import 'package:workout_app/features/create_post/providers/create_post_provider.dart';
-import 'package:workout_app/features/notifications/providers/notifications_provider.dart';
-import 'package:workout_app/features/auth/screens/auth_wrapper_screen.dart';
+import 'providers/auth_provider.dart';
+import 'providers/feed_provider.dart';
+import 'providers/notification_provider.dart';
+import 'widgets/auth_wrapper.dart';
 
 void main() {
   runApp(const MyApp());
@@ -19,60 +16,32 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
-        ChangeNotifierProvider(create: (_) => FeedProvider()),
-        ChangeNotifierProvider(create: (_) => ProfileProvider()),
-        ChangeNotifierProvider(create: (_) => CreatePostProvider()),
-        ChangeNotifierProvider(create: (_) => NotificationsProvider()),
+        ChangeNotifierProvider<AuthProvider>(
+          create: (context) => AuthProvider(),
+        ),
+        ChangeNotifierProvider<FeedProvider>(
+          create: (context) => FeedProvider(),
+        ),
+        ChangeNotifierProvider<NotificationProvider>(
+          create: (context) => NotificationProvider(),
+        ),
       ],
       child: MaterialApp(
         title: 'Workout App',
+        debugShowCheckedModeBanner: false,
         theme: ThemeData(
-          primaryColor: AppColors.primary,
-          primarySwatch: AppColors.primarySwatch,
-          scaffoldBackgroundColor: AppColors.background,
-          appBarTheme: AppBarTheme(
-            backgroundColor: AppColors.surface,
+          useMaterial3: true,
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: const Color(0xFF4CAF50),
+            brightness: Brightness.light,
+          ),
+          appBarTheme: const AppBarTheme(
+            backgroundColor: Colors.white,
+            foregroundColor: Colors.black,
             elevation: 0,
-            iconTheme: const IconThemeData(color: AppColors.textPrimary),
-            titleTextStyle: TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          textTheme: const TextTheme(
-            bodyLarge: TextStyle(color: AppColors.textPrimary),
-            bodyMedium: TextStyle(color: AppColors.textPrimary),
-          ),
-          inputDecorationTheme: InputDecorationTheme(
-            filled: true,
-            fillColor: AppColors.surface,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadius),
-              borderSide: BorderSide(color: AppColors.primary.withAlpha(77)),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadius),
-              borderSide: BorderSide(color: AppColors.primary, width: 2),
-            ),
-          ),
-          elevatedButtonTheme: ElevatedButtonThemeData(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppDimensions.borderRadius),
-              ),
-              padding: const EdgeInsets.symmetric(
-                horizontal: 24,
-                vertical: 12,
-              ),
-            ),
           ),
         ),
-        home: const AuthWrapperScreen(),
-        debugShowCheckedModeBanner: false,
+        home: const AuthWrapper(),
       ),
     );
   }

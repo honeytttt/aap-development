@@ -1,267 +1,167 @@
-import 'dart:async';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:workout_app/core/models/notification.dart';
 
 class NotificationsProvider with ChangeNotifier {
-  List<Notification> _notifications = [];
+  List<AppNotification> _notifications = [];
   int _unreadCount = 0;
-  bool _isLoading = false;
-  bool _simulationActive = false;
-  Timer? _simulationTimer;
 
-  List<Notification> get notifications => _notifications;
+  List<AppNotification> get notifications => _notifications;
   int get unreadCount => _unreadCount;
-  bool get isLoading => _isLoading;
-  bool get simulationActive => _simulationActive;
 
-  // Mock notifications data
-  final List<Map<String, dynamic>> _mockNotifications = [
-    {
-      'id': 'notif_1',
-      'type': 'like',
-      'title': 'New Like',
-      'message': 'Fitness Enthusiast liked your post',
-      'userId': 'user1',
-      'userName': 'Fitness Enthusiast',
-      'userAvatar': 'https://via.placeholder.com/150/4CAF50/FFFFFF?text=FE',
-      'postId': '1',
-      'createdAt': DateTime.now().subtract(const Duration(minutes: 5)),
-      'status': 'unread',
-    },
-    {
-      'id': 'notif_2',
-      'type': 'comment',
-      'title': 'New Comment',
-      'message': 'Gym Buddy commented on your post: "Great workout!"',
-      'userId': 'user2',
-      'userName': 'Gym Buddy',
-      'userAvatar': 'https://via.placeholder.com/150/2196F3/FFFFFF?text=GB',
-      'postId': '1',
-      'commentId': 'c1',
-      'createdAt': DateTime.now().subtract(const Duration(hours: 1)),
-      'status': 'read',
-    },
-    {
-      'id': 'notif_3',
-      'type': 'follow',
-      'title': 'New Follower',
-      'message': 'Yoga Master started following you',
-      'userId': 'user3',
-      'userName': 'Yoga Master',
-      'userAvatar': 'https://via.placeholder.com/150/FF5722/FFFFFF?text=YM',
-      'createdAt': DateTime.now().subtract(const Duration(hours: 2)),
-      'status': 'read',
-    },
-    {
-      'id': 'notif_4',
-      'type': 'reply',
-      'title': 'Reply to Comment',
-      'message': 'Yoga Master replied to your comment',
-      'userId': 'user3',
-      'userName': 'Yoga Master',
-      'userAvatar': 'https://via.placeholder.com/150/FF5722/FFFFFF?text=YM',
-      'postId': '2',
-      'commentId': 'c2_1',
-      'createdAt': DateTime.now().subtract(const Duration(days: 1)),
-      'status': 'read',
-    },
-    {
-      'id': 'notif_5',
-      'type': 'mention',
-      'title': 'You were mentioned',
-      'message': 'Fitness Enthusiast mentioned you in a comment',
-      'userId': 'user1',
-      'userName': 'Fitness Enthusiast',
-      'userAvatar': 'https://via.placeholder.com/150/4CAF50/FFFFFF?text=FE',
-      'postId': '1',
-      'commentId': 'c1',
-      'createdAt': DateTime.now().subtract(const Duration(days: 2)),
-      'status': 'read',
-    },
-    {
-      'id': 'notif_6',
-      'type': 'system',
-      'title': 'Welcome to Workout App!',
-      'message': 'Start sharing your fitness journey with the community',
-      'createdAt': DateTime.now().subtract(const Duration(days: 3)),
-      'status': 'read',
-    },
-  ];
-
-  // Load notifications
-  Future<void> loadNotifications() async {
-    _isLoading = true;
-    notifyListeners();
-
-    try {
-      await Future.delayed(const Duration(seconds: 1));
-      
-      // Convert mock data to Notification objects
-      _notifications = _mockNotifications
-          .map((data) => Notification.fromJson(data))
-          .toList();
-      
-      // Update unread count
-      _updateUnreadCount();
-      
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error loading notifications: $e');
-      }
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
+  NotificationsProvider() {
+    _initializeMockNotifications();
   }
 
-  // Refresh notifications
-  Future<void> refreshNotifications() async {
-    await loadNotifications();
+  void _initializeMockNotifications() {
+    _notifications = [
+      AppNotification(
+        id: '1',
+        type: AppNotificationType.like,
+        title: 'New Like',
+        body: 'John liked your post',
+        userId: 'user2',
+        targetUserId: 'currentUser',
+        postId: 'post1',
+        color: Colors.pink,
+        icon: Icons.favorite,
+        timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
+      ),
+      AppNotification(
+        id: '2',
+        type: AppNotificationType.comment,
+        title: 'New Comment',
+        body: 'Sarah commented on your workout',
+        userId: 'user3',
+        targetUserId: 'currentUser',
+        postId: 'post2',
+        commentId: 'comment1',
+        color: Colors.blue,
+        icon: Icons.comment,
+        timestamp: DateTime.now().subtract(const Duration(minutes: 15)),
+      ),
+      AppNotification(
+        id: '3',
+        type: AppNotificationType.follow,
+        title: 'New Follower',
+        body: 'Mike started following you',
+        userId: 'user4',
+        targetUserId: 'currentUser',
+        color: Colors.orange,
+        icon: Icons.person_add,
+        timestamp: DateTime.now().subtract(const Duration(hours: 1)),
+      ),
+      AppNotification(
+        id: '4',
+        type: AppNotificationType.workout,
+        title: 'Workout Reminder',
+        body: "Don't forget your evening workout!",
+        color: Colors.green,
+        icon: Icons.fitness_center,
+        timestamp: DateTime.now().subtract(const Duration(hours: 2)),
+      ),
+      AppNotification(
+        id: '5',
+        type: AppNotificationType.achievement,
+        title: 'Achievement Unlocked!',
+        body: 'You completed 7-day streak!',
+        color: Colors.yellow,
+        icon: Icons.emoji_events,
+        timestamp: DateTime.now().subtract(const Duration(days: 1)),
+      ),
+    ];
+    
+    _updateUnreadCount();
   }
 
-  // Mark notification as read
+  void _updateUnreadCount() {
+    _unreadCount = _notifications.where((n) => !n.isRead).length;
+  }
+
   void markAsRead(String notificationId) {
     final index = _notifications.indexWhere((n) => n.id == notificationId);
     if (index != -1) {
-      _notifications[index].markAsRead();
+      _notifications[index] = _notifications[index].copyWith(
+        isRead: true,
+        status: AppNotificationStatus.read,
+      );
       _updateUnreadCount();
       notifyListeners();
     }
   }
 
-  // Mark all as read
   void markAllAsRead() {
-    for (final notification in _notifications) {
-      notification.markAsRead();
-    }
+    _notifications = _notifications
+        .map((notification) => notification.copyWith(
+              isRead: true,
+              status: AppNotificationStatus.read,
+            ))
+        .toList();
     _updateUnreadCount();
     notifyListeners();
   }
 
-  // Delete notification
   void deleteNotification(String notificationId) {
     _notifications.removeWhere((n) => n.id == notificationId);
     _updateUnreadCount();
     notifyListeners();
   }
 
-  // Clear all notifications
   void clearAllNotifications() {
     _notifications.clear();
     _unreadCount = 0;
     notifyListeners();
   }
 
-  // Update unread count
-  void _updateUnreadCount() {
-    _unreadCount = _notifications.where((n) => n.isUnread).length;
-  }
-
-  // Simulate receiving new notification
-  void simulateNewNotification({
-    NotificationType type = NotificationType.like,
-    String? userName,
-    String? userAvatar,
-    String? postId,
-  }) {
-    final user = userName ?? 'Fitness Fan';
-    final avatar = userAvatar ?? 'https://via.placeholder.com/150/4CAF50/FFFFFF?text=FF';
-    
-    String title;
-    String message;
-    
-    switch (type) {
-      case NotificationType.like:
-        title = 'New Like';
-        message = '$user liked your post';
-        break;
-      case NotificationType.comment:
-        title = 'New Comment';
-        message = '$user commented on your post';
-        break;
-      case NotificationType.reply:
-        title = 'Reply to Comment';
-        message = '$user replied to your comment';
-        break;
-      case NotificationType.follow:
-        title = 'New Follower';
-        message = '$user started following you';
-        break;
-      case NotificationType.mention:
-        title = 'You were mentioned';
-        message = '$user mentioned you in a comment';
-        break;
-      case NotificationType.system:
-        title = 'System Update';
-        message = 'New features available in the app';
-        break;
-    }
-    
-    final newNotification = Notification(
-      id: 'notif_${DateTime.now().millisecondsSinceEpoch}',
-      type: type,
-      title: title,
-      message: message,
-      userId: 'simulated_user',
-      userName: user,
-      userAvatar: avatar,
-      postId: postId,
-      createdAt: DateTime.now(),
-      status: NotificationStatus.unread,
-    );
-    
-    _notifications.insert(0, newNotification);
+  void addNotification(AppNotification notification) {
+    _notifications.insert(0, notification);
     _updateUnreadCount();
     notifyListeners();
-    
-    // Show snackbar or toast (this would be handled by UI)
-    if (kDebugMode) {
-      print('📱 New notification: $title - $message');
+  }
+
+  // Simulate real-time notifications
+  void simulateNotification(AppNotificationType type) {
+    final now = DateTime.now();
+    final notifications = {
+      AppNotificationType.like: AppNotification(
+        id: 'sim_${now.millisecondsSinceEpoch}',
+        type: AppNotificationType.like,
+        title: 'New Like',
+        body: 'User liked your recent post',
+        userId: 'sim_user',
+        targetUserId: 'currentUser',
+        postId: 'sim_post',
+        color: Colors.pink,
+        icon: Icons.favorite,
+        timestamp: now,
+      ),
+      AppNotificationType.comment: AppNotification(
+        id: 'sim_${now.millisecondsSinceEpoch}',
+        type: AppNotificationType.comment,
+        title: 'New Comment',
+        body: 'User commented on your post',
+        userId: 'sim_user',
+        targetUserId: 'currentUser',
+        postId: 'sim_post',
+        commentId: 'sim_comment',
+        color: Colors.blue,
+        icon: Icons.comment,
+        timestamp: now,
+      ),
+      AppNotificationType.follow: AppNotification(
+        id: 'sim_${now.millisecondsSinceEpoch}',
+        type: AppNotificationType.follow,
+        title: 'New Follower',
+        body: 'User started following you',
+        userId: 'sim_user',
+        targetUserId: 'currentUser',
+        color: Colors.orange,
+        icon: Icons.person_add,
+        timestamp: now,
+      ),
+    };
+
+    if (notifications.containsKey(type)) {
+      addNotification(notifications[type]!);
     }
-  }
-
-  // Start notification simulation
-  void startNotificationSimulation() {
-    if (_simulationActive) return;
-    
-    _simulationActive = true;
-    notifyListeners();
-    
-    // Simulate receiving notifications every 10-30 seconds
-    _simulationTimer = Timer.periodic(const Duration(seconds: 15), (timer) {
-      if (!_simulationActive) {
-        timer.cancel();
-        return;
-      }
-      
-      // Random notification type
-      final types = NotificationType.values;
-      final randomType = types[DateTime.now().millisecond % types.length];
-      
-      simulateNewNotification(type: randomType);
-    });
-  }
-
-  // Stop notification simulation
-  void stopNotificationSimulation() {
-    _simulationActive = false;
-    _simulationTimer?.cancel();
-    _simulationTimer = null;
-    notifyListeners();
-  }
-
-  // Toggle simulation
-  void toggleNotificationSimulation() {
-    if (_simulationActive) {
-      stopNotificationSimulation();
-    } else {
-      startNotificationSimulation();
-    }
-  }
-
-  @override
-  void dispose() {
-    _simulationTimer?.cancel();
-    super.dispose();
   }
 }

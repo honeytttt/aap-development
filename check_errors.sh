@@ -1,0 +1,26 @@
+#!/bin/bash
+
+echo "🔍 Checking for Common Flutter Errors..."
+echo "========================================"
+
+echo "1. Checking for const expression errors..."
+echo ""
+echo "Common const errors occur when:"
+echo "  - Using Provider.of() in const widgets"
+echo "  - Using non-const callbacks in const constructors"
+echo "  - Missing 'const' keyword where needed"
+echo ""
+echo "2. Running flutter analyze..."
+flutter analyze 2>&1 | grep -E "error|Error|ERROR" || echo "✅ No errors found!"
+
+echo ""
+echo "3. Quick fixes applied:"
+echo "   ✅ Removed 'const' from Center widget in notifications_screen"
+echo "   ✅ Made Center widget non-const (removed 'const' keyword)"
+echo "   ✅ This allows Provider.of() calls to work properly"
+echo ""
+echo "🎯 The issue was in notifications_screen.dart line 72-73:"
+echo "   Was: const Center(child: Column(...))"
+echo "   Now: Center(child: Column(...))"
+echo ""
+echo "🚀 Run the app with: ./run_app.sh"

@@ -1,147 +1,78 @@
-import 'package:flutter/foundation.dart';
-import 'package:workout_app/core/models/post.dart';
+import 'package:flutter/material.dart';
 import 'package:workout_app/core/models/media.dart';
 
 class CreatePostProvider with ChangeNotifier {
-  // Draft post
-  Post _draftPost = Post(
-    id: 'draft_${DateTime.now().millisecondsSinceEpoch}',
-    userId: 'current_user',
-    userName: 'Current User',
-    userAvatar: 'https://via.placeholder.com/150/4CAF50/FFFFFF?text=U',
-    content: '',
-    media: [],
-    hashtags: [],
-    likes: [],
-    comments: [],
-    createdAt: DateTime.now(),
-    isDraft: true,
-  );
+  List<Media> _selectedMedia = [];
+  List<String> _hashtags = [];
+  bool _isPosting = false;
 
-  // Get draft post
-  Post get draftPost => _draftPost;
+  List<Media> get selectedMedia => _selectedMedia;
+  List<String> get hashtags => _hashtags;
+  bool get isPosting => _isPosting;
 
-  // Update caption
-  void updateCaption(String caption) {
-    _draftPost = _draftPost.copyWith(content: caption);
-    notifyListeners();
-  }
-
-  // Add media
   void addMedia(Media media) {
-    _draftPost = _draftPost.copyWith(
-      media: [..._draftPost.media, media],
-    );
+    _selectedMedia.add(media);
     notifyListeners();
   }
 
-  // Remove media
-  void removeMedia(String mediaId) {
-    _draftPost = _draftPost.copyWith(
-      media: _draftPost.media.where((m) => m.id != mediaId).toList(),
-    );
+  void removeMedia(Media media) {
+    _selectedMedia.remove(media);
     notifyListeners();
   }
 
-  // Add hashtag
+  void clearMedia() {
+    _selectedMedia.clear();
+    notifyListeners();
+  }
+
   void addHashtag(String hashtag) {
-    final formattedHashtag = hashtag.startsWith('#') ? hashtag : '#$hashtag';
-    if (!_draftPost.hashtags.contains(formattedHashtag)) {
-      _draftPost = _draftPost.copyWith(
-        hashtags: [..._draftPost.hashtags, formattedHashtag],
-      );
+    if (!_hashtags.contains(hashtag)) {
+      _hashtags.add(hashtag);
       notifyListeners();
     }
   }
 
-  // Remove hashtag
   void removeHashtag(String hashtag) {
-    _draftPost = _draftPost.copyWith(
-      hashtags: _draftPost.hashtags.where((h) => h != hashtag).toList(),
-    );
+    _hashtags.remove(hashtag);
     notifyListeners();
   }
 
-  // Extract hashtags from caption
-  void extractHashtagsFromCaption() {
-    final regex = RegExp(r'#\w+');
-    final matches = regex.allMatches(_draftPost.content);
-    final hashtags = matches.map((m) => m.group(0)!).toSet().toList();
-    
-    _draftPost = _draftPost.copyWith(hashtags: hashtags);
+  void clearHashtags() {
+    _hashtags.clear();
     notifyListeners();
   }
 
-  // Save draft
-  void saveDraft() {
-    _draftPost = _draftPost.copyWith(
-      updatedAt: DateTime.now(),
-      isDraft: true,
-    );
-    print('💾 Draft saved: ${_draftPost.id}');
+  Future<void> createPost({
+    required String caption,
+    required List<String> hashtags,
+  }) async {
+    _isPosting = true;
     notifyListeners();
-  }
 
-  // Clear draft
-  void clearDraft() {
-    _draftPost = Post(
-      id: 'draft_${DateTime.now().millisecondsSinceEpoch}',
-      userId: 'current_user',
-      userName: 'Current User',
-      userAvatar: 'https://via.placeholder.com/150/4CAF50/FFFFFF?text=U',
-      content: '',
-      media: [],
-      hashtags: [],
-      likes: [],
-      comments: [],
-      createdAt: DateTime.now(),
-      isDraft: true,
-    );
-    notifyListeners();
-  }
+    try {
+      // Simulate API delay
+      await Future.delayed(const Duration(seconds: 2));
 
-  // Mock media for testing
-  List<Media> get mockMediaList => [
-    Media(
-      id: 'media_1',
-      type: MediaType.image,
-      url: 'https://images.unsplash.com/photo-1536922246289-88c42f957773?w=800',
-      thumbnailUrl: 'https://images.unsplash.com/photo-1536922246289-88c42f957773?w=400',
-      caption: 'Workout session',
-      uploadDate: DateTime.now(),
-      width: 800,
-      height: 600,
-    ),
-    Media(
-      id: 'media_2',
-      type: MediaType.image,
-      url: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=800',
-      thumbnailUrl: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=400',
-      caption: 'Healthy meal prep',
-      uploadDate: DateTime.now(),
-      width: 800,
-      height: 600,
-    ),
-    Media(
-      id: 'media_3',
-      type: MediaType.video,
-      url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-      thumbnailUrl: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400',
-      caption: 'Workout tutorial',
-      uploadDate: DateTime.now(),
-      width: 800,
-      height: 600,
-      duration: 60,
-    ),
-    Media(
-      id: 'media_4',
-      type: MediaType.image,
-      url: 'https://images.unsplash.com/photo-1594381898411-846e7d193883?w=800',
-      thumbnailUrl: 'https://images.unsplash.com/photo-1594381898411-846e7d193883?w=400',
-      caption: 'Gym equipment',
-      uploadDate: DateTime.now(),
-      width: 800,
-      height: 600,
-    ),
-  ];
+      // Create a mock post
+      final mockPost = {
+        'id': 'post_${DateTime.now().millisecondsSinceEpoch}',
+        'caption': caption,
+        'hashtags': hashtags,
+        'media': _selectedMedia,
+        'createdAt': DateTime.now(),
+      };
+
+      print('Post created: $mockPost');
+      
+      // Clear the form
+      _selectedMedia.clear();
+      _hashtags.clear();
+      _isPosting = false;
+      notifyListeners();
+    } catch (e) {
+      _isPosting = false;
+      notifyListeners();
+      rethrow;
+    }
+  }
 }

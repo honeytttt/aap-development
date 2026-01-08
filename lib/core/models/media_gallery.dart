@@ -1,46 +1,29 @@
 import 'package:workout_app/core/models/media.dart';
 
 class MediaGallery {
-  final List<Media> mediaList;
-  final DateTime? uploadDate;
+  final List<Media> mediaItems;
 
-  MediaGallery({
-    required this.mediaList,
-    this.uploadDate,
-  });
+  MediaGallery({required this.mediaItems});
 
-  // Factory method to create from JSON
+  // JSON serialization
   factory MediaGallery.fromJson(Map<String, dynamic> json) {
-    return MediaGallery(
-      mediaList: (json['mediaList'] as List<dynamic>?)
-              ?.map((m) => Media.fromJson(m))
-              .toList() ??
-          [],
-      uploadDate: json['uploadDate'] != null
-          ? DateTime.parse(json['uploadDate'])
-          : null,
-    );
+    final mediaItems = (json['mediaItems'] as List)
+        .map((item) => Media.fromJson(item))
+        .toList();
+    return MediaGallery(mediaItems: mediaItems);
   }
 
-  // Convert to JSON
   Map<String, dynamic> toJson() {
     return {
-      'mediaList': mediaList.map((m) => m.toJson()).toList(),
-      'uploadDate': uploadDate?.toIso8601String(),
+      'mediaItems': mediaItems.map((item) => item.toJson()).toList(),
     };
   }
-}
 
-class UploadStatus {
-  final String mediaId;
-  final double progress;
-  final bool isUploading;
-  final String? error;
-
-  UploadStatus({
-    required this.mediaId,
-    required this.progress,
-    required this.isUploading,
-    this.error,
-  });
+  MediaGallery copyWith({
+    List<Media>? mediaItems,
+  }) {
+    return MediaGallery(
+      mediaItems: mediaItems ?? this.mediaItems,
+    );
+  }
 }

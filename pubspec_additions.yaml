@@ -1,0 +1,11 @@
+# Add these to your dependencies in pubspec.yaml:
+
+dependencies:
+  flutter:
+    sdk: flutter
+  provider: ^6.1.5
+  shared_preferences: ^2.2.2
+  # Add if you want more features:
+  # cached_network_image: ^3.3.0
+  # timeago: ^3.5.0
+  # flutter_advanced_networkimage: ^1.2.1

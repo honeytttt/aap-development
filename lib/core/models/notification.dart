@@ -1,134 +1,128 @@
-enum NotificationType {
+import 'package:flutter/material.dart';
+
+enum AppNotificationType {
   like,
   comment,
-  reply,
   follow,
-  mention,
+  workout,
+  achievement,
   system,
 }
 
-enum NotificationStatus {
+enum AppNotificationStatus {
   unread,
   read,
+  dismissed,
 }
 
-class Notification {
+class AppNotification {
   final String id;
-  final NotificationType type;
+  final AppNotificationType type;
   final String title;
-  final String message;
-  final String? userId;           // User who triggered the notification
-  final String? userName;
-  final String? userAvatar;
-  final String? postId;           // Related post (if any)
-  final String? commentId;        // Related comment (if any)
-  final DateTime createdAt;
-  NotificationStatus status;
-  final Map<String, dynamic>? metadata;
+  final String body;
+  final String? userId;
+  final String? targetUserId;
+  final String? postId;
+  final String? commentId;
+  final String? message;
+  final Color color;
+  final IconData icon;
+  final DateTime timestamp;
+  bool isRead;
+  AppNotificationStatus status;
 
-  Notification({
+  AppNotification({
     required this.id,
     required this.type,
     required this.title,
-    required this.message,
+    required this.body,
     this.userId,
-    this.userName,
-    this.userAvatar,
+    this.targetUserId,
     this.postId,
     this.commentId,
-    required this.createdAt,
-    this.status = NotificationStatus.unread,
-    this.metadata,
+    this.message,
+    required this.color,
+    required this.icon,
+    required this.timestamp,
+    this.isRead = false,
+    this.status = AppNotificationStatus.unread,
   });
 
-  // Mark as read
-  void markAsRead() {
-    status = NotificationStatus.read;
-  }
-
-  // Check if notification is unread
-  bool get isUnread => status == NotificationStatus.unread;
-
-  // Get icon based on notification type
-  String get icon {
-    switch (type) {
-      case NotificationType.like:
-        return '❤️';
-      case NotificationType.comment:
-        return '💬';
-      case NotificationType.reply:
-        return '↩️';
-      case NotificationType.follow:
-        return '👤';
-      case NotificationType.mention:
-        return '@';
-      case NotificationType.system:
-        return '🔔';
-      default:
-        return '🔔';
-    }
-  }
-
-  // Get color based on notification type
-  String get color {
-    switch (type) {
-      case NotificationType.like:
-        return '#FF5252'; // Red
-      case NotificationType.comment:
-        return '#2196F3'; // Blue
-      case NotificationType.reply:
-        return '#4CAF50'; // Green
-      case NotificationType.follow:
-        return '#9C27B0'; // Purple
-      case NotificationType.mention:
-        return '#FF9800'; // Orange
-      case NotificationType.system:
-        return '#607D8B'; // Blue Grey
-      default:
-        return '#9E9E9E'; // Grey
-    }
-  }
-
-  // Factory method to create from JSON
-  factory Notification.fromJson(Map<String, dynamic> json) {
-    return Notification(
-      id: json['id'] ?? '',
-      type: NotificationType.values.firstWhere(
-        (e) => e.toString().split('.').last == json['type'],
-        orElse: () => NotificationType.system,
-      ),
-      title: json['title'] ?? '',
-      message: json['message'] ?? '',
-      userId: json['userId'],
-      userName: json['userName'],
-      userAvatar: json['userAvatar'],
-      postId: json['postId'],
-      commentId: json['commentId'],
-      createdAt: json['createdAt'] != null
-          ? DateTime.parse(json['createdAt'])
-          : DateTime.now(),
-      status: json['status'] == 'read'
-          ? NotificationStatus.read
-          : NotificationStatus.unread,
-      metadata: json['metadata'],
-    );
-  }
-
-  // Convert to JSON
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'type': type.toString().split('.').last,
+      'type': type.toString(),
       'title': title,
-      'message': message,
+      'body': body,
       'userId': userId,
-      'userName': userName,
-      'userAvatar': userAvatar,
+      'targetUserId': targetUserId,
       'postId': postId,
       'commentId': commentId,
-      'createdAt': createdAt.toIso8601String(),
-      'status': status == NotificationStatus.read ? 'read' : 'unread',
-      'metadata': metadata,
+      'message': message,
+      'color': color.value,
+      'icon': icon.codePoint,
+      'timestamp': timestamp.toIso8601String(),
+      'isRead': isRead,
+      'status': status.toString(),
     };
+  }
+
+  factory AppNotification.fromJson(Map<String, dynamic> json) {
+    return AppNotification(
+      id: json['id'],
+      type: AppNotificationType.values.firstWhere(
+        (e) => e.toString() == json['type'],
+        orElse: () => AppNotificationType.system,
+      ),
+      title: json['title'],
+      body: json['body'],
+      userId: json['userId'],
+      targetUserId: json['targetUserId'],
+      postId: json['postId'],
+      commentId: json['commentId'],
+      message: json['message'],
+      color: Color(json['color']),
+      icon: IconData(json['icon'], fontFamily: 'MaterialIcons'),
+      timestamp: DateTime.parse(json['timestamp']),
+      isRead: json['isRead'] ?? false,
+      status: AppNotificationStatus.values.firstWhere(
+        (e) => e.toString() == json['status'],
+        orElse: () => AppNotificationStatus.unread,
+      ),
+    );
+  }
+
+  AppNotification copyWith({
+    String? id,
+    AppNotificationType? type,
+    String? title,
+    String? body,
+    String? userId,
+    String? targetUserId,
+    String? postId,
+    String? commentId,
+    String? message,
+    Color? color,
+    IconData? icon,
+    DateTime? timestamp,
+    bool? isRead,
+    AppNotificationStatus? status,
+  }) {
+    return AppNotification(
+      id: id ?? this.id,
+      type: type ?? this.type,
+      title: title ?? this.title,
+      body: body ?? this.body,
+      userId: userId ?? this.userId,
+      targetUserId: targetUserId ?? this.targetUserId,
+      postId: postId ?? this.postId,
+      commentId: commentId ?? this.commentId,
+      message: message ?? this.message,
+      color: color ?? this.color,
+      icon: icon ?? this.icon,
+      timestamp: timestamp ?? this.timestamp,
+      isRead: isRead ?? this.isRead,
+      status: status ?? this.status,
+    );
   }
 }

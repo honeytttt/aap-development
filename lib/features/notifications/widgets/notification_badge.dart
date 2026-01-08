@@ -3,67 +3,50 @@ import 'package:provider/provider.dart';
 import 'package:workout_app/features/notifications/providers/notifications_provider.dart';
 
 class NotificationBadge extends StatelessWidget {
-  final double? size;
-  final Color? badgeColor;
+  final Color? color;
   final Color? textColor;
-  final bool showCount;
+  final double? size;
 
   const NotificationBadge({
-    super.key,
-    this.size = 24,
-    this.badgeColor = Colors.red,
+    Key? key,
+    this.color = Colors.red,
     this.textColor = Colors.white,
-    this.showCount = true,
-  });
+    this.size = 20,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<NotificationsProvider>(context);
-    final count = provider.unreadCount;
+    return Consumer<NotificationsProvider>(
+      builder: (context, provider, child) {
+        if (provider.unreadCount == 0) {
+          return const SizedBox.shrink();
+        }
 
-    if (count == 0) {
-      return const SizedBox.shrink();
-    }
-
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        Icon(
-          Icons.notifications,
-          size: size,
-          color: Theme.of(context).iconTheme.color,
-        ),
-        Positioned(
-          top: -4,
-          right: -4,
-          child: Container(
-            padding: const EdgeInsets.all(2),
-            decoration: BoxDecoration(
-              color: badgeColor,
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: Theme.of(context).scaffoldBackgroundColor,
-                width: 1.5,
+        final count = provider.unreadCount > 99 ? '99+' : '${provider.unreadCount}';
+        
+        return Container(
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+          ),
+          constraints: BoxConstraints(
+            minWidth: size!,
+            minHeight: size!,
+          ),
+          child: Center(
+            child: Text(
+              count,
+              style: TextStyle(
+                color: textColor,
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
               ),
-            ),
-            constraints: BoxConstraints(
-              minWidth: size! * 0.5,
-              minHeight: size! * 0.5,
-            ),
-            child: Center(
-              child: Text(
-                count > 99 ? '99+' : count.toString(),
-                style: TextStyle(
-                  color: textColor,
-                  fontSize: size! * 0.35,
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
-              ),
+              textAlign: TextAlign.center,
             ),
           ),
-        ),
-      ],
+        );
+      },
     );
   }
 }

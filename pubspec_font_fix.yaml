@@ -1,0 +1,23 @@
+# Add this to your pubspec.yaml under flutter section:
+
+flutter:
+  fonts:
+    - family: Roboto
+      fonts:
+        - asset: fonts/Roboto-Regular.ttf
+        - asset: fonts/Roboto-Bold.ttf
+          weight: 700
+    - family: Noto
+      fonts:
+        - asset: fonts/NotoSans-Regular.ttf
+        - asset: fonts/NotoSans-Bold.ttf
+          weight: 700
+
+# Or use Google Fonts package:
+dependencies:
+  google_fonts: ^6.1.0
+
+# Then in your theme:
+# theme: ThemeData(
+#   textTheme: GoogleFonts.robotoTextTheme(),
+# )

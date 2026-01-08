@@ -3,212 +3,233 @@ import 'package:provider/provider.dart';
 import 'package:workout_app/core/models/comment.dart';
 import 'package:workout_app/features/feed/providers/feed_provider.dart';
 
-class CommentItem extends StatelessWidget {
+class CommentItem extends StatefulWidget {
   final Comment comment;
-  final VoidCallback? onReply;
+  final VoidCallback onReply;
+  final String postId;
 
   const CommentItem({
     super.key,
     required this.comment,
-    this.onReply,
+    required this.onReply,
+    required this.postId,
   });
+
+  @override
+  State<CommentItem> createState() => _CommentItemState();
+}
+
+class _CommentItemState extends State<CommentItem> {
+  bool _showReplies = false;
+
+  void _toggleLike() {
+    final feedProvider = Provider.of<FeedProvider>(context, listen: false);
+    final currentUserId = '1'; // Mock current user ID
+    
+    if (widget.comment.isLiked) {
+      feedProvider.unlikeComment(widget.postId, widget.comment.id);
+    } else {
+      feedProvider.likeComment(widget.postId, widget.comment.id, currentUserId);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final feedProvider = Provider.of<FeedProvider>(context);
-    
-    final hasReplies = comment.replies.isNotEmpty;
-    final isLiked = feedProvider.hasUserLikedComment(comment.id, 'user1'); // Mock user ID
+    final currentUserId = '1'; // Mock current user ID
 
     return Container(
       margin: EdgeInsets.only(
-        bottom: 8,
-        left: comment.depth * 24.0, // Indentation based on depth
+        left: widget.comment.parentCommentId != null ? 24.0 : 0.0,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Comment content
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: const Color.fromRGBO(240, 240, 240, 1),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: const Color.fromRGBO(200, 200, 200, 1),
-                width: 1,
+          Card(
+            elevation: 0,
+            color: Colors.grey[50],
+            margin: const EdgeInsets.only(bottom: 8),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      CircleAvatar(
+                        radius: 16,
+                        backgroundImage: NetworkImage(
+                          'https://ui-avatars.com/api/?name=${widget.comment.userName}&background=4CAF50&color=fff',
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  widget.comment.userName,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                Text(
+                                  _formatTime(widget.comment.createdAt),
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              widget.comment.text,
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                IconButton(
+                                  icon: Icon(
+                                    widget.comment.isLiked
+                                        ? Icons.favorite
+                                        : Icons.favorite_border,
+                                    size: 18,
+                                    color: widget.comment.isLiked
+                                        ? Colors.red
+                                        : Colors.grey,
+                                  ),
+                                  onPressed: _toggleLike,
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '${widget.comment.likesCount}',
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                TextButton(
+                                  onPressed: widget.onReply,
+                                  style: TextButton.styleFrom(
+                                    padding: EdgeInsets.zero,
+                                    minimumSize: Size.zero,
+                                  ),
+                                  child: const Text(
+                                    'Reply',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // User info and time
-                Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 14,
-                      backgroundImage: NetworkImage(comment.userAvatar),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+          ),
+          // Replies
+          if (widget.comment.replies.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(left: 16),
+              child: Column(
+                children: [
+                  if (!_showReplies)
+                    TextButton(
+                      onPressed: () {
+                        setState(() {
+                          _showReplies = true;
+                        });
+                      },
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        minimumSize: Size.zero,
+                      ),
+                      child: Row(
                         children: [
-                          Text(
-                            comment.userName,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 13,
-                            ),
+                          Container(
+                            width: 16,
+                            height: 1,
+                            color: Colors.grey,
                           ),
+                          const SizedBox(width: 8),
                           Text(
-                            _formatTimeAgo(comment.createdAt),
+                            'View ${widget.comment.replies.length} ${widget.comment.replies.length == 1 ? 'reply' : 'replies'}',
                             style: const TextStyle(
-                              color: Color.fromRGBO(96, 96, 96, 1),
-                              fontSize: 11,
+                              fontSize: 12,
+                              color: Colors.grey,
                             ),
                           ),
                         ],
                       ),
                     ),
-                    // Expand/collapse button for comments with replies
-                    if (hasReplies)
-                      IconButton(
-                        icon: Icon(
-                          comment.isExpanded
-                              ? Icons.expand_less
-                              : Icons.expand_more,
-                          size: 16,
-                          color: const Color.fromRGBO(96, 96, 96, 1),
-                        ),
-                        onPressed: () {
-                          feedProvider.toggleCommentExpanded(comment.id);
-                        },
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                
-                // Comment content
-                Text(
-                  comment.content,
-                  style: const TextStyle(fontSize: 14),
-                ),
-              ],
-            ),
-          ),
-          
-          // Action buttons
-          Padding(
-            padding: const EdgeInsets.only(left: 12, top: 4),
-            child: Row(
-              children: [
-                // Like button
-                InkWell(
-                  onTap: () {
-                    feedProvider.likeComment(comment.id, 'user1'); // Mock user
-                  },
-                  child: Row(
-                    children: [
-                      Icon(
-                        isLiked ? Icons.favorite : Icons.favorite_border,
-                        size: 14,
-                        color: isLiked ? Colors.red : const Color.fromRGBO(96, 96, 96, 1),
-                      ),
-                      const SizedBox(width: 4),
-                      if (comment.likes > 0)
-                        Text(
-                          '${comment.likes}',
-                          style: const TextStyle(
-                            color: Color.fromRGBO(96, 96, 96, 1),
-                            fontSize: 12,
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 16),
-                
-                // Reply button
-                InkWell(
-                  onTap: onReply,
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.reply,
-                        size: 14,
-                        color: Color.fromRGBO(96, 96, 96, 1),
-                      ),
-                      const SizedBox(width: 4),
-                      if (comment.replies.isNotEmpty)
-                        Text(
-                          '${comment.replies.length}',
-                          style: const TextStyle(
-                            color: Color.fromRGBO(96, 96, 96, 1),
-                            fontSize: 12,
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 16),
-                
-                // View replies button (for collapsed comments with replies)
-                if (hasReplies && !comment.isExpanded)
-                  InkWell(
-                    onTap: () {
-                      feedProvider.toggleCommentExpanded(comment.id);
-                    },
-                    child: Row(
+                  if (_showReplies)
+                    Column(
                       children: [
-                        Text(
-                          'View ${comment.replies.length} ${comment.replies.length == 1 ? 'reply' : 'replies'}',
-                          style: const TextStyle(
-                            color: Color(0xFF4CAF50),
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
+                        ...widget.comment.replies.map((reply) {
+                          return CommentItem(
+                            comment: reply,
+                            onReply: widget.onReply,
+                            postId: widget.postId,
+                          );
+                        }),
+                        TextButton(
+                          onPressed: () {
+                            setState(() {
+                              _showReplies = false;
+                            });
+                          },
+                          style: TextButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            minimumSize: Size.zero,
                           ),
-                        ),
-                        const SizedBox(width: 4),
-                        const Icon(
-                          Icons.arrow_forward,
-                          size: 12,
-                          color: Color(0xFF4CAF50),
+                          child: const Text(
+                            'Hide replies',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey,
+                            ),
+                          ),
                         ),
                       ],
                     ),
-                  ),
-              ],
-            ),
-          ),
-          
-          // Reply indicator line
-          if (comment.depth > 0)
-            Container(
-              margin: const EdgeInsets.only(left: 12, top: 4),
-              height: 1,
-              width: 16,
-              color: const Color.fromRGBO(200, 200, 200, 1),
+                ],
+              ),
             ),
         ],
       ),
     );
   }
 
-  String _formatTimeAgo(DateTime date) {
+  String _formatTime(DateTime timestamp) {
     final now = DateTime.now();
-    final difference = now.difference(date);
-    
-    if (difference.inDays > 0) {
-      return '${difference.inDays}d';
-    } else if (difference.inHours > 0) {
-      return '${difference.inHours}h';
-    } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes}m';
-    } else {
+    final difference = now.difference(timestamp);
+
+    if (difference.inSeconds < 60) {
       return 'Just now';
+    } else if (difference.inMinutes < 60) {
+      return '${difference.inMinutes}m ago';
+    } else if (difference.inHours < 24) {
+      return '${difference.inHours}h ago';
+    } else if (difference.inDays < 7) {
+      return '${difference.inDays}d ago';
+    } else {
+      return '${timestamp.day}/${timestamp.month}/${timestamp.year}';
     }
   }
 }

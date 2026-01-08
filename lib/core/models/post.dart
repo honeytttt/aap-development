@@ -1,115 +1,108 @@
-import 'package:workout_app/core/models/comment.dart';
-import 'package:workout_app/core/models/media.dart';
+import 'package:flutter/material.dart';
+import 'user.dart';
+import 'comment.dart';
+import 'media.dart';
 
 class Post {
   final String id;
-  final String userId;
-  final String userName;
-  final String userAvatar;
-  final String content;
-  final List<Media> media;
+  final User user;
+  final String caption;
   final List<String> hashtags;
-  final List<String> likes;
-  final List<Comment> comments;
+  final List<MediaItem> media;
   final DateTime createdAt;
-  final DateTime? updatedAt;
-  final bool isDraft;
+  int likesCount;
+  int commentsCount;
+  bool isLiked;
+  List<Comment> comments;
+  final String? workoutType;
+  final int? duration;
+  final int? calories;
 
   Post({
     required this.id,
-    required this.userId,
-    required this.userName,
-    required this.userAvatar,
-    required this.content,
-    this.media = const [],
+    required this.user,
+    required this.caption,
     this.hashtags = const [],
-    this.likes = const [],
-    this.comments = const [],
+    required this.media,
     required this.createdAt,
-    this.updatedAt,
-    this.isDraft = false,
+    this.likesCount = 0,
+    this.commentsCount = 0,
+    this.isLiked = false,
+    this.comments = const [],
+    this.workoutType,
+    this.duration,
+    this.calories,
   });
 
-  // Add copyWith method to Post class
-  Post copyWith({
-    String? id,
-    String? userId,
-    String? userName,
-    String? userAvatar,
-    String? content,
-    List<Media>? media,
-    List<String>? hashtags,
-    List<String>? likes,
-    List<Comment>? comments,
-    DateTime? createdAt,
-    DateTime? updatedAt,
-    bool? isDraft,
-  }) {
-    return Post(
-      id: id ?? this.id,
-      userId: userId ?? this.userId,
-      userName: userName ?? this.userName,
-      userAvatar: userAvatar ?? this.userAvatar,
-      content: content ?? this.content,
-      media: media ?? this.media,
-      hashtags: hashtags ?? this.hashtags,
-      likes: likes ?? this.likes,
-      comments: comments ?? this.comments,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
-      isDraft: isDraft ?? this.isDraft,
-    );
-  }
-
-  // Factory method to create from JSON
-  factory Post.fromJson(Map<String, dynamic> json) {
-    return Post(
-      id: json['id'] ?? '',
-      userId: json['userId'] ?? '',
-      userName: json['userName'] ?? '',
-      userAvatar: json['userAvatar'] ?? '',
-      content: json['content'] ?? '',
-      media: (json['media'] as List<dynamic>?)
-              ?.map((m) => Media.fromJson(m))
-              .toList() ??
-          [],
-      hashtags: (json['hashtags'] as List<dynamic>?)
-              ?.map((h) => h.toString())
-              .toList() ??
-          [],
-      likes: (json['likes'] as List<dynamic>?)
-              ?.map((l) => l.toString())
-              .toList() ??
-          [],
-      comments: (json['comments'] as List<dynamic>?)
-              ?.map((c) => Comment.fromJson(c))
-              .toList() ??
-          [],
-      createdAt: json['createdAt'] != null
-          ? DateTime.parse(json['createdAt'])
-          : DateTime.now(),
-      updatedAt: json['updatedAt'] != null
-          ? DateTime.parse(json['updatedAt'])
-          : null,
-      isDraft: json['isDraft'] ?? false,
-    );
-  }
-
-  // Convert to JSON
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'userId': userId,
-      'userName': userName,
-      'userAvatar': userAvatar,
-      'content': content,
-      'media': media.map((m) => m.toJson()).toList(),
+      'user': user.toJson(),
+      'caption': caption,
       'hashtags': hashtags,
-      'likes': likes,
-      'comments': comments.map((c) => c.toJson()).toList(),
+      'media': media.map((m) => m.toJson()).toList(),
       'createdAt': createdAt.toIso8601String(),
-      'updatedAt': updatedAt?.toIso8601String(),
-      'isDraft': isDraft,
+      'likesCount': likesCount,
+      'commentsCount': commentsCount,
+      'isLiked': isLiked,
+      'comments': comments.map((c) => c.toJson()).toList(),
+      'workoutType': workoutType,
+      'duration': duration,
+      'calories': calories,
     };
+  }
+
+  factory Post.fromJson(Map<String, dynamic> json) {
+    return Post(
+      id: json['id'],
+      user: User.fromJson(json['user']),
+      caption: json['caption'],
+      hashtags: List<String>.from(json['hashtags'] ?? []),
+      media: (json['media'] as List)
+          .map((m) => MediaItem.fromJson(m))
+          .toList(),
+      createdAt: DateTime.parse(json['createdAt']),
+      likesCount: json['likesCount'] ?? 0,
+      commentsCount: json['commentsCount'] ?? 0,
+      isLiked: json['isLiked'] ?? false,
+      comments: (json['comments'] as List?)
+          ?.map((c) => Comment.fromJson(c))
+          .toList() ?? [],
+      workoutType: json['workoutType'],
+      duration: json['duration'],
+      calories: json['calories'],
+    );
+  }
+
+  Post copyWith({
+    String? id,
+    User? user,
+    String? caption,
+    List<String>? hashtags,
+    List<MediaItem>? media,
+    DateTime? createdAt,
+    int? likesCount,
+    int? commentsCount,
+    bool? isLiked,
+    List<Comment>? comments,
+    String? workoutType,
+    int? duration,
+    int? calories,
+  }) {
+    return Post(
+      id: id ?? this.id,
+      user: user ?? this.user,
+      caption: caption ?? this.caption,
+      hashtags: hashtags ?? this.hashtags,
+      media: media ?? this.media,
+      createdAt: createdAt ?? this.createdAt,
+      likesCount: likesCount ?? this.likesCount,
+      commentsCount: commentsCount ?? this.commentsCount,
+      isLiked: isLiked ?? this.isLiked,
+      comments: comments ?? this.comments,
+      workoutType: workoutType ?? this.workoutType,
+      duration: duration ?? this.duration,
+      calories: calories ?? this.calories,
+    );
   }
 }
