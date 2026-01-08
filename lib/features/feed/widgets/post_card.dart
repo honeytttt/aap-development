@@ -4,7 +4,10 @@ import 'package:workout_app/core/models/post.dart';
 import 'package:workout_app/features/auth/providers/auth_provider.dart';
 import 'package:workout_app/features/feed/providers/feed_provider.dart';
 import 'package:workout_app/features/feed/screens/comments_screen.dart';
-import 'package:workout_app/features/profile/screens/profile_screen.dart'; // NEW IMPORT
+import 'package:workout_app/features/profile/screens/profile_screen.dart';
+import 'package:workout_app/features/media/widgets/media_gallery.dart';
+import 'package:workout_app/features/media/widgets/single_media.dart';
+import 'package:workout_app/core/models/media_gallery.dart' show MediaGallery;
 
 class PostCard extends StatelessWidget {
   final Post post;
@@ -61,8 +64,8 @@ class PostCard extends StatelessWidget {
                       ),
                       Text(
                         _formatTimeAgo(post.createdAt),
-                        style: TextStyle(
-                          color: Colors.grey[600],
+                        style: const TextStyle(
+                          color: Color.fromRGBO(96, 96, 96, 1),
                           fontSize: 12,
                         ),
                       ),
@@ -74,29 +77,43 @@ class PostCard extends StatelessWidget {
             const SizedBox(height: 16),
             
             // Post content
-            Text(
-              post.content,
-              style: const TextStyle(fontSize: 15),
-            ),
-            const SizedBox(height: 16),
-            
-            // Images (placeholder for now)
-            if (post.images.isNotEmpty)
-              Container(
-                height: 200,
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Center(
-                  child: Icon(
-                    Icons.image,
-                    size: 50,
-                    color: Colors.grey[400],
-                  ),
+            if (post.content.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Text(
+                  post.content,
+                  style: const TextStyle(fontSize: 15),
                 ),
               ),
-            const SizedBox(height: 16),
+            
+            // Media Gallery - REPLACED OLD IMAGE PLACEHOLDER
+            if (post.hasMedia)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: post.hasMultipleMedia
+                    ? MediaGalleryWidget(
+                        media: post.media,
+                        initialIndex: 0,
+                        showControls: true,
+                      )
+                    : SingleMediaWidget(
+                        media: post.media.first,
+                        height: 250,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => MediaViewerScreen(
+                                mediaGallery: MediaGallery(
+                                  media: post.media,
+                                  currentIndex: 0,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+              ),
             
             // Stats
             Row(
@@ -109,8 +126,8 @@ class PostCard extends StatelessWidget {
                 const SizedBox(width: 4),
                 Text(
                   '${post.likes}',
-                  style: TextStyle(
-                    color: Colors.grey[600],
+                  style: const TextStyle(
+                    color: Color.fromRGBO(96, 96, 96, 1),
                     fontSize: 14,
                   ),
                 ),
@@ -118,16 +135,35 @@ class PostCard extends StatelessWidget {
                 Icon(
                   Icons.chat_bubble_outline,
                   size: 16,
-                  color: Colors.grey[600],
+                  color: const Color.fromRGBO(96, 96, 96, 1),
                 ),
                 const SizedBox(width: 4),
                 Text(
                   '${post.commentCount}',
-                  style: TextStyle(
-                    color: Colors.grey[600],
+                  style: const TextStyle(
+                    color: Color.fromRGBO(96, 96, 96, 1),
                     fontSize: 14,
                   ),
                 ),
+                const SizedBox(width: 16),
+                if (post.hasMedia)
+                  Row(
+                    children: [
+                      Icon(
+                        post.hasImages ? Icons.photo : Icons.videocam,
+                        size: 16,
+                        color: const Color.fromRGBO(96, 96, 96, 1),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${post.media.length}',
+                        style: const TextStyle(
+                          color: Color.fromRGBO(96, 96, 96, 1),
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
               ],
             ),
             const SizedBox(height: 12),
@@ -149,13 +185,13 @@ class PostCard extends StatelessWidget {
                     children: [
                       Icon(
                         isLiked ? Icons.favorite : Icons.favorite_border,
-                        color: isLiked ? Colors.red : Colors.grey[600],
+                        color: isLiked ? Colors.red : const Color.fromRGBO(96, 96, 96, 1),
                       ),
                       const SizedBox(width: 8),
                       Text(
                         'Like',
                         style: TextStyle(
-                          color: isLiked ? Colors.red : Colors.grey[600],
+                          color: isLiked ? Colors.red : const Color.fromRGBO(96, 96, 96, 1),
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -177,13 +213,13 @@ class PostCard extends StatelessWidget {
                     children: [
                       Icon(
                         Icons.chat_bubble_outline,
-                        color: Colors.grey[600],
+                        color: const Color.fromRGBO(96, 96, 96, 1),
                       ),
                       const SizedBox(width: 8),
                       const Text(
                         'Comment',
                         style: TextStyle(
-                          color: Colors.grey,
+                          color: Color.fromRGBO(96, 96, 96, 1),
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -191,22 +227,27 @@ class PostCard extends StatelessWidget {
                   ),
                 ),
                 
-                // Share button (placeholder)
-                Row(
-                  children: [
-                    Icon(
-                      Icons.share,
-                      color: Colors.grey[600],
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Share',
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontWeight: FontWeight.w500,
+                // Share button
+                InkWell(
+                  onTap: () {
+                    _showShareOptions(context, post);
+                  },
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.share,
+                        color: const Color.fromRGBO(96, 96, 96, 1),
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 8),
+                      const Text(
+                        'Share',
+                        style: TextStyle(
+                          color: Color.fromRGBO(96, 96, 96, 1),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -235,5 +276,70 @@ class PostCard extends StatelessWidget {
     } else {
       return 'Just now';
     }
+  }
+
+  void _showShareOptions(BuildContext context, Post post) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.link, color: Color(0xFF4CAF50)),
+                title: const Text('Copy Link'),
+                onTap: () {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Link copied to clipboard'),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.share, color: Color(0xFF4CAF50)),
+                title: const Text('Share to...'),
+                onTap: () {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Share functionality would open native share dialog'),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.bookmark, color: Color(0xFF4CAF50)),
+                title: const Text('Save Post'),
+                onTap: () {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Post saved to your collection'),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 8),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 48),
+                  backgroundColor: const Color.fromRGBO(220, 220, 220, 1),
+                  foregroundColor: Colors.black87,
+                ),
+                child: const Text('Cancel'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 }

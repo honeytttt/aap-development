@@ -17,17 +17,17 @@ class ProfileHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: Colors.white,
-        borderRadius: const BorderRadius.only(
+        borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(20),
           bottomRight: Radius.circular(20),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Color.fromRGBO(0, 0, 0, 0.1),
             blurRadius: 10,
-            offset: const Offset(0, 4),
+            offset: Offset(0, 4),
           ),
         ],
       ),
@@ -38,12 +38,12 @@ class ProfileHeader extends StatelessWidget {
             children: [
               Container(
                 padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(
-                    color: const Color(0xFF4CAF50),
+                  border: Border.fromBorderSide(BorderSide(
+                    color: Color(0xFF4CAF50),
                     width: 3,
-                  ),
+                  )),
                 ),
                 child: CircleAvatar(
                   radius: 50,
@@ -61,10 +61,13 @@ class ProfileHeader extends StatelessWidget {
                   right: 0,
                   child: Container(
                     padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF4CAF50),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF4CAF50),
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2),
+                      border: Border.fromBorderSide(BorderSide(
+                        color: Colors.white,
+                        width: 2,
+                      )),
                     ),
                     child: const Icon(
                       Icons.edit,
@@ -131,7 +134,7 @@ class ProfileHeader extends StatelessWidget {
                     ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: userProfile.isFollowing
-                          ? Colors.grey[300]
+                          ? Color.fromRGBO(220, 220, 220, 1)
                           : const Color(0xFF4CAF50),
                       foregroundColor: userProfile.isFollowing
                           ? Colors.black87

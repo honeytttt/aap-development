@@ -1,89 +1,76 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:workout_app/core/models/user.dart';
 
-// Auth Provider with MOCK implementation
-// Later we'll replace with Firebase
-class AuthProvider extends ChangeNotifier {
-  User? _currentUser;
+class AuthProvider with ChangeNotifier {
+  User? _user;
   bool _isLoading = false;
-  String? _errorMessage;
-  
-  User? get currentUser => _currentUser;
+  String? _error;
+
+  User? get user => _user;
   bool get isLoading => _isLoading;
-  String? get errorMessage => _errorMessage;
-  bool get isAuthenticated => _currentUser != null;
-  
-  // MOCK: Simulate login
-  Future<void> login(String email, String password) async {
+  String? get error => _error;
+
+  Future<bool> login(String email, String password) async {
     _isLoading = true;
-    _errorMessage = null;
+    _error = null;
     notifyListeners();
-    
-    // Simulate network delay
+
     await Future.delayed(const Duration(seconds: 1));
-    
-    if (email.isEmpty || password.isEmpty) {
-      _errorMessage = 'Please enter email and password';
+
+    if (email.isNotEmpty && password.isNotEmpty) {
+      // Extract name from email (everything before @)
+      final name = email.split('@').first;
+      _user = User(
+        id: 'mock-user-1',
+        email: email,
+        name: name,
+        createdAt: DateTime.now(),
+      );
       _isLoading = false;
       notifyListeners();
-      return;
-    }
-    
-    // Mock successful login
-    _currentUser = User.mock();
-    _isLoading = false;
-    notifyListeners();
-  }
-  
-  // MOCK: Simulate signup
-  Future<void> signup(String email, String password, String displayName) async {
-    _isLoading = true;
-    _errorMessage = null;
-    notifyListeners();
-    
-    await Future.delayed(const Duration(seconds: 1));
-    
-    if (email.isEmpty || password.isEmpty || displayName.isEmpty) {
-      _errorMessage = 'Please fill all fields';
+      return true;
+    } else {
+      _error = 'Please enter email and password';
       _isLoading = false;
       notifyListeners();
-      return;
+      return false;
     }
-    
-    // Mock successful signup
-    _currentUser = User(
-      id: 'user-${DateTime.now().millisecondsSinceEpoch}',
-      email: email,
-      displayName: displayName,
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
-    );
-    
-    _isLoading = false;
-    notifyListeners();
   }
-  
-  // MOCK: Simulate logout
-  Future<void> logout() async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    _currentUser = null;
-    notifyListeners();
-  }
-  
-  // MOCK: Simulate Google login
-  Future<void> loginWithGoogle() async {
+
+  Future<bool> signup(String email, String password, String name) async {
     _isLoading = true;
+    _error = null;
     notifyListeners();
-    
+
     await Future.delayed(const Duration(seconds: 1));
-    
-    _currentUser = User.mock();
-    _isLoading = false;
+
+    if (email.isNotEmpty && password.isNotEmpty && name.isNotEmpty) {
+      _user = User(
+        id: 'mock-user-${DateTime.now().millisecondsSinceEpoch}',
+        email: email,
+        name: name,
+        createdAt: DateTime.now(),
+      );
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } else {
+      _error = 'Please fill all fields';
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  void logout() {
+    _user = null;
+    _error = null;
     notifyListeners();
   }
-  
+
   void clearError() {
-    _errorMessage = null;
+    _error = null;
     notifyListeners();
   }
 }

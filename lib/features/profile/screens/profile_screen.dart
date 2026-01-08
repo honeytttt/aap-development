@@ -14,7 +14,6 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final profileProvider = Provider.of<ProfileProvider>(context);
-    final authProvider = Provider.of<AuthProvider>(context);
     
     final isCurrentUser = userId == null || userId == 'current-user';
     final userProfile = isCurrentUser 
@@ -83,7 +82,7 @@ class ProfileScreen extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.grey[50],
+                      color: const Color.fromRGBO(240, 240, 240, 1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
@@ -225,7 +224,8 @@ class SettingsScreen extends StatelessWidget {
                 settings.copyWith(emailNotifications: value),
               );
             },
-            activeColor: const Color(0xFF4CAF50),
+            activeThumbColor: const Color(0xFF4CAF50),
+            activeTrackColor: const Color(0xFFC8E6C9),
           ),
           SwitchListTile(
             title: const Text('Push Notifications'),
@@ -235,7 +235,8 @@ class SettingsScreen extends StatelessWidget {
                 settings.copyWith(pushNotifications: value),
               );
             },
-            activeColor: const Color(0xFF4CAF50),
+            activeThumbColor: const Color(0xFF4CAF50),
+            activeTrackColor: const Color(0xFFC8E6C9),
           ),
           
           const SizedBox(height: 24),
@@ -260,7 +261,8 @@ class SettingsScreen extends StatelessWidget {
                 settings.copyWith(privateProfile: value),
               );
             },
-            activeColor: const Color(0xFF4CAF50),
+            activeThumbColor: const Color(0xFF4CAF50),
+            activeTrackColor: const Color(0xFFC8E6C9),
           ),
           SwitchListTile(
             title: const Text('Show Online Status'),
@@ -270,7 +272,8 @@ class SettingsScreen extends StatelessWidget {
                 settings.copyWith(showOnlineStatus: value),
               );
             },
-            activeColor: const Color(0xFF4CAF50),
+            activeThumbColor: const Color(0xFF4CAF50),
+            activeTrackColor: const Color(0xFFC8E6C9),
           ),
           
           const SizedBox(height: 24),

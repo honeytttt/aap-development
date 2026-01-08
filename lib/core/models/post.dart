@@ -1,14 +1,19 @@
+import 'package:workout_app/core/models/comment.dart';
+import 'package:workout_app/core/models/media.dart';
+
 class Post {
   final String id;
   final String userId;
   final String userName;
   final String userAvatar;
   final String content;
-  final List<String> images;
+  final List<Media> media;
+  final List<String> hashtags;
+  final List<String> likes;
+  final List<Comment> comments;
   final DateTime createdAt;
-  final int likes;
-  final List<String> likedBy;
-  final int commentCount;
+  final DateTime? updatedAt;
+  final bool isDraft;
 
   Post({
     required this.id,
@@ -16,54 +21,29 @@ class Post {
     required this.userName,
     required this.userAvatar,
     required this.content,
-    this.images = const [],
+    this.media = const [],
+    this.hashtags = const [],
+    this.likes = const [],
+    this.comments = const [],
     required this.createdAt,
-    this.likes = 0,
-    this.likedBy = const [],
-    this.commentCount = 0,
+    this.updatedAt,
+    this.isDraft = false,
   });
 
-  factory Post.fromJson(Map<String, dynamic> json) {
-    return Post(
-      id: json['id'],
-      userId: json['userId'],
-      userName: json['userName'],
-      userAvatar: json['userAvatar'],
-      content: json['content'],
-      images: List<String>.from(json['images'] ?? []),
-      createdAt: DateTime.parse(json['createdAt']),
-      likes: json['likes'] ?? 0,
-      likedBy: List<String>.from(json['likedBy'] ?? []),
-      commentCount: json['commentCount'] ?? 0,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'userId': userId,
-      'userName': userName,
-      'userAvatar': userAvatar,
-      'content': content,
-      'images': images,
-      'createdAt': createdAt.toIso8601String(),
-      'likes': likes,
-      'likedBy': likedBy,
-      'commentCount': commentCount,
-    };
-  }
-
+  // Add copyWith method to Post class
   Post copyWith({
     String? id,
     String? userId,
     String? userName,
     String? userAvatar,
     String? content,
-    List<String>? images,
+    List<Media>? media,
+    List<String>? hashtags,
+    List<String>? likes,
+    List<Comment>? comments,
     DateTime? createdAt,
-    int? likes,
-    List<String>? likedBy,
-    int? commentCount,
+    DateTime? updatedAt,
+    bool? isDraft,
   }) {
     return Post(
       id: id ?? this.id,
@@ -71,11 +51,65 @@ class Post {
       userName: userName ?? this.userName,
       userAvatar: userAvatar ?? this.userAvatar,
       content: content ?? this.content,
-      images: images ?? this.images,
-      createdAt: createdAt ?? this.createdAt,
+      media: media ?? this.media,
+      hashtags: hashtags ?? this.hashtags,
       likes: likes ?? this.likes,
-      likedBy: likedBy ?? this.likedBy,
-      commentCount: commentCount ?? this.commentCount,
+      comments: comments ?? this.comments,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      isDraft: isDraft ?? this.isDraft,
     );
+  }
+
+  // Factory method to create from JSON
+  factory Post.fromJson(Map<String, dynamic> json) {
+    return Post(
+      id: json['id'] ?? '',
+      userId: json['userId'] ?? '',
+      userName: json['userName'] ?? '',
+      userAvatar: json['userAvatar'] ?? '',
+      content: json['content'] ?? '',
+      media: (json['media'] as List<dynamic>?)
+              ?.map((m) => Media.fromJson(m))
+              .toList() ??
+          [],
+      hashtags: (json['hashtags'] as List<dynamic>?)
+              ?.map((h) => h.toString())
+              .toList() ??
+          [],
+      likes: (json['likes'] as List<dynamic>?)
+              ?.map((l) => l.toString())
+              .toList() ??
+          [],
+      comments: (json['comments'] as List<dynamic>?)
+              ?.map((c) => Comment.fromJson(c))
+              .toList() ??
+          [],
+      createdAt: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'])
+          : DateTime.now(),
+      updatedAt: json['updatedAt'] != null
+          ? DateTime.parse(json['updatedAt'])
+          : null,
+      isDraft: json['isDraft'] ?? false,
+    );
+  }
+
+  // Convert to JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'userId': userId,
+      'userName': userName,
+      'userAvatar': userAvatar,
+      'content': content,
+      'media': media.map((m) => m.toJson()).toList(),
+      'hashtags': hashtags,
+      'likes': likes,
+      'comments': comments.map((c) => c.toJson()).toList(),
+      'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt?.toIso8601String(),
+      'isDraft': isDraft,
+    };
   }
 }
