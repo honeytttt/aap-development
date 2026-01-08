@@ -3,8 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:workout_app/features/feed/providers/feed_provider.dart';
 import 'package:workout_app/features/feed/widgets/post_card.dart';
 import 'package:workout_app/features/create_post/screens/create_post_screen.dart';
-import 'package:workout_app/features/notifications/screens/notifications_screen.dart';
-import 'package:workout_app/features/notifications/widgets/notification_badge.dart';
 
 class FeedScreen extends StatefulWidget {
   const FeedScreen({super.key});
@@ -44,15 +42,6 @@ class _FeedScreenState extends State<FeedScreen> {
     );
   }
 
-  void _navigateToNotifications() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const NotificationsScreen(),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final posts = Provider.of<FeedProvider>(context).posts;
@@ -61,12 +50,6 @@ class _FeedScreenState extends State<FeedScreen> {
       appBar: AppBar(
         title: const Text('Workout Feed'),
         actions: [
-          // Notifications button with badge
-          IconButton(
-            icon: const NotificationBadge(),
-            onPressed: _navigateToNotifications,
-            tooltip: 'Notifications',
-          ),
           IconButton(
             icon: const Icon(Icons.add_box_outlined),
             onPressed: _navigateToCreatePost,
