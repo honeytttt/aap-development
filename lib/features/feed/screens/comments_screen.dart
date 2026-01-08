@@ -1,0 +1,147 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:workout_app/core/models/post.dart';
+import 'package:workout_app/features/auth/providers/auth_provider.dart';
+import 'package:workout_app/features/feed/providers/feed_provider.dart';
+import 'package:workout_app/features/feed/widgets/comment_item.dart';
+
+class CommentsScreen extends StatefulWidget {
+  final Post post;
+
+  const CommentsScreen({super.key, required this.post});
+
+  @override
+  State<CommentsScreen> createState() => _CommentsScreenState();
+}
+
+class _CommentsScreenState extends State<CommentsScreen> {
+  final TextEditingController _commentController = TextEditingController();
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
+    final feedProvider = Provider.of<FeedProvider>(context);
+    
+    // Filter comments for this post (no replies yet - Phase 4B will add nesting)
+    final postComments = feedProvider.comments
+        .where((comment) => comment.postId == widget.post.id)
+        .toList();
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          'Comments (${widget.post.commentCount})',
+          style: const TextStyle(
+            color: Colors.white,
+          ),
+        ),
+        backgroundColor: const Color(0xFF4CAF50),
+        iconTheme: const IconThemeData(color: Colors.white),
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: postComments.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.chat_bubble_outline,
+                          size: 64,
+                          color: Colors.grey[400],
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'No comments yet',
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Be the first to comment!',
+                          style: TextStyle(
+                            color: Colors.grey[500],
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: postComments.length,
+                    itemBuilder: (context, index) {
+                      final comment = postComments[index];
+                      return CommentItem(comment: comment);
+                    },
+                  ),
+          ),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border(top: BorderSide(color: Colors.grey[200]!)),
+            ),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 18,
+                  backgroundColor: const Color(0xFF4CAF50),
+                  child: Text(
+                    authProvider.user?.name.substring(0, 1) ?? 'U',
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: TextField(
+                    controller: _commentController,
+                    decoration: InputDecoration(
+                      hintText: 'Add a comment...',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(25),
+                        borderSide: BorderSide(color: Colors.grey[300]!),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                    ),
+                    maxLines: null,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                IconButton(
+                  onPressed: () {
+                    final content = _commentController.text.trim();
+                    if (content.isNotEmpty) {
+                      feedProvider.addComment(
+                        widget.post.id,
+                        authProvider.user!.id,
+                        authProvider.user!.name,
+                        '', // Mock avatar - Phase 4B will use real avatars
+                        content,
+                      );
+                      _commentController.clear();
+                      FocusScope.of(context).unfocus();
+                    }
+                  },
+                  icon: const Icon(Icons.send),
+                  color: const Color(0xFF4CAF50),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
