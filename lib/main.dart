@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:workout_app/core/constants/app_constants.dart';
 import 'package:workout_app/features/auth/providers/auth_provider.dart';
 import 'package:workout_app/features/auth/screens/auth_wrapper_screen.dart';
 import 'package:workout_app/features/feed/providers/feed_provider.dart';
+import 'package:workout_app/features/profile/providers/profile_provider.dart';
 
 void main() {
   runApp(const MyApp());
@@ -18,19 +18,20 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => FeedProvider()),
+        ChangeNotifierProvider(create: (_) => ProfileProvider()), // NEW
       ],
       child: MaterialApp(
         title: 'Peaceful Workouts',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
-          primaryColor: AppColors.primary,
+          primaryColor: const Color(0xFF4CAF50),
           colorScheme: ColorScheme.fromSwatch().copyWith(
-            primary: AppColors.primary,
-            secondary: AppColors.secondary,
+            primary: const Color(0xFF4CAF50),
+            secondary: const Color(0xFF388E3C),
           ),
-          scaffoldBackgroundColor: AppColors.background,
+          scaffoldBackgroundColor: const Color(0xFFF5F5F5),
           appBarTheme: const AppBarTheme(
-            backgroundColor: AppColors.primary,
+            backgroundColor: Color(0xFF4CAF50),
             elevation: 0,
             centerTitle: true,
             iconTheme: IconThemeData(color: Colors.white),
@@ -49,7 +50,7 @@ class MyApp extends StatelessWidget {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: AppColors.primary),
+              borderSide: const BorderSide(color: Color(0xFF4CAF50)),
             ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
@@ -58,7 +59,7 @@ class MyApp extends StatelessWidget {
           ),
           elevatedButtonTheme: ElevatedButtonThemeData(
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
+              backgroundColor: const Color(0xFF4CAF50),
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
               shape: RoundedRectangleBorder(
@@ -72,14 +73,14 @@ class MyApp extends StatelessWidget {
           ),
           textButtonTheme: TextButtonThemeData(
             style: TextButton.styleFrom(
-              foregroundColor: AppColors.primary,
+              foregroundColor: const Color(0xFF4CAF50),
               textStyle: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
             ),
           ),
-          cardTheme: CardTheme(
+          cardTheme: CardThemeData(
             elevation: 2,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),

@@ -4,6 +4,7 @@ import 'package:workout_app/core/models/post.dart';
 import 'package:workout_app/features/auth/providers/auth_provider.dart';
 import 'package:workout_app/features/feed/providers/feed_provider.dart';
 import 'package:workout_app/features/feed/screens/comments_screen.dart';
+import 'package:workout_app/features/profile/screens/profile_screen.dart'; // NEW IMPORT
 
 class PostCard extends StatelessWidget {
   final Post post;
@@ -14,7 +15,9 @@ class PostCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
     final feedProvider = Provider.of<FeedProvider>(context);
-    final isLiked = post.likedBy.contains(authProvider.user?.id);
+    final isLiked = authProvider.user != null 
+        ? post.likedBy.contains(authProvider.user!.id)
+        : false;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
@@ -27,34 +30,46 @@ class PostCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // User info
-            Row(
-              children: [
-                CircleAvatar(
-                  radius: 20,
-                  backgroundImage: NetworkImage(post.userAvatar),
-                ),
-                const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      post.userName,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
+            // User info - NOW CLICKABLE
+            InkWell(
+              onTap: () {
+                // Navigate to user profile
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ProfileScreen(userId: post.userId),
+                  ),
+                );
+              },
+              borderRadius: BorderRadius.circular(20),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundImage: NetworkImage(post.userAvatar),
+                  ),
+                  const SizedBox(width: 12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        post.userName,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                       ),
-                    ),
-                    Text(
-                      _formatTimeAgo(post.createdAt),
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 12,
+                      Text(
+                        _formatTimeAgo(post.createdAt),
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 12,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
+                    ],
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 16),
             

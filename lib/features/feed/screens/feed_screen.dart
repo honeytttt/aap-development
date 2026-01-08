@@ -4,6 +4,7 @@ import 'package:workout_app/core/models/post.dart';
 import 'package:workout_app/features/auth/providers/auth_provider.dart';
 import 'package:workout_app/features/feed/providers/feed_provider.dart';
 import 'package:workout_app/features/feed/widgets/post_card.dart';
+import 'package:workout_app/features/profile/screens/profile_screen.dart'; // NEW IMPORT
 
 class FeedScreen extends StatelessWidget {
   const FeedScreen({super.key});
@@ -22,6 +23,20 @@ class FeedScreen extends StatelessWidget {
         backgroundColor: const Color(0xFF4CAF50),
         elevation: 0,
         centerTitle: true,
+        actions: [
+          // NEW: Profile button
+          IconButton(
+            icon: const Icon(Icons.person),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ProfileScreen(),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: Consumer<FeedProvider>(
         builder: (context, feedProvider, child) {
