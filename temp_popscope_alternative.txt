@@ -1,0 +1,19 @@
+// Alternative using PopScope with correct signature:
+/*
+return PopScope(
+  canPop: false,
+  onPopInvokedWithResult: (PopInvokedResult result) async {
+    if (!result.didPop) {
+      if (await _confirmDiscard()) {
+        provider.clearDraft();
+        if (mounted) Navigator.pop(context);
+      }
+    }
+  },
+  child: Scaffold(...)
+);
+*/
+
+// The key differences:
+// 1. Add explicit type: (PopInvokedResult result) 
+// 2. OR use the async function signature correctly
